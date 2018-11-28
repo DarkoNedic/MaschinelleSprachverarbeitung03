@@ -57,9 +57,10 @@ public class main {
     
     public static void emissions() {
     	iterate_emissions();
+    	build_emissions_matrix();
     }
     
-    public static void iterate_emissions() {
+	public static void iterate_emissions() {
     	String word = null;
     	String tag = null;
     	boolean add = false;
@@ -92,6 +93,11 @@ public class main {
     		}
     	}
     }
+    
+    private static void build_emissions_matrix() {
+		// TODO Auto-generated method stub
+		
+	}
 
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
