@@ -33,7 +33,7 @@ public class main {
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		String path = "./brown_training";
-		System.out.println("Hallo");
+		System.out.println("Halo");
 				
 		File[] files = read_folder(path);
 		
