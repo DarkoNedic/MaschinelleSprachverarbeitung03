@@ -45,6 +45,7 @@ public class main {
 		// TODO Auto-generated method stub
 		String path = "./brown_training";
 
+
 				
 		File[] files = read_folder(path);
 		
