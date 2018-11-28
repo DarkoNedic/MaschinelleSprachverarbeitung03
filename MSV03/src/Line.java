@@ -2,12 +2,18 @@ import java.util.ArrayList;
 
 public class Line {
 
-	public static ArrayList<String> line;
+	static ArrayList<String> line = new ArrayList<>();
 	public Line (ArrayList<String> line) {
-		this.line = line;
+		for (String g : line) {
+			this.line.add(g);
+		}
 	}
 	
 	public static String get(int index) {
 		return line.get(index);
+	}
+	
+	public static int size() {
+		return line.size();
 	}
 }
