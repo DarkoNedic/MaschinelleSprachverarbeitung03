@@ -61,8 +61,7 @@ public class main {
     	iterate_emissions();
     	build_emissions_matrix();
     }
-
-
+    
     public static void iterate_emissions() {
     	String word = null;
     	String tag = null;
