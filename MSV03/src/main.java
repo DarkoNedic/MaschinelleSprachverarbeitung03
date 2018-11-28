@@ -34,7 +34,11 @@ public class main {
 		// TODO Auto-generated method stub
 		String path = "./brown_training";
 		System.out.println("Halo");
+
 		System.out.println("alb");
+
+		System.out.println("bla");
+
 				
 		File[] files = read_folder(path);
 		
