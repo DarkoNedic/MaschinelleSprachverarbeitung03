@@ -37,8 +37,6 @@ public class main {
 
 		System.out.println("alb");
 
-		System.out.println("bla");
-
 				
 		File[] files = read_folder(path);
 		
