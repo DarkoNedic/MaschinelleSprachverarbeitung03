@@ -13,9 +13,11 @@ import java.util.Map.Entry;
 public class main {
 	
 	public static ArrayList<ArrayList<String>> lines = new ArrayList<>();
-	
+
 	public static Map<String, HashMap<String, Integer>> emissions_map = new HashMap<>();
-	
+	public static Map<String,Double> transitionMatrix;
+
+
 	public static File[] read_folder(String path) {
 		File[] files = new File(path).listFiles();
 		return files;
@@ -54,11 +56,11 @@ public class main {
             }
         }
     }
-    
+
     public static void emissions() {
     	iterate_emissions();
     }
-    
+
     public static void iterate_emissions() {
     	String word = null;
     	String tag = null;
@@ -76,7 +78,7 @@ public class main {
     		}
     	}
     }
-    
+
     public static void add_emissions(String word, String tag) {
     	int val;
     	if (!emissions_map.containsKey(word)) {
@@ -94,16 +96,55 @@ public class main {
     }
 
 	public static void main(String[] args) throws IOException {
-		// TODO Auto-generated method stub
 		String path = "./brown_training";
+
 				
 		File[] files = read_folder(path);
-		
+
 		for (File file : files) {
 			load_file(file);
 		}
-		
-		emissions();
-	}
+
+        emissions();
+        transitions();
+
+    }
+
+    private static void transitions()
+    {
+        Map<String, Map<String, Integer>> states = new HashMap<>();
+
+        for (ArrayList<String> element : lines)
+        {
+
+            for (int pos = 1; pos < element.size()- 2; pos = pos +2)
+            {
+
+                if(states.containsKey(element.get(pos))){
+                    if(states.get(element.get(pos)).containsKey(element.get(pos+2))){
+                        states.get(element.get(pos)).put(element.get(pos+2),states.get(element.get(pos)).get(element.get(pos+2))+1);
+                    }else{
+                        states.get(element.get(pos)).put(element.get(pos+2),1);
+                    }
+                }else{
+                    Map<String, Integer> temp = new HashMap<>();
+                    temp.put(element.get(pos+2), 1);
+                    states.put(element.get(pos), temp);
+                }
+            }
+        }
+//        System.out.println("bla");
+
+        transitionMatrix = new HashMap<>();
+
+        for(Map.Entry<String, Map<String, Integer>> entry : states.entrySet()) {
+            String key = entry.getKey();
+            Map value = entry.getValue();
+
+            // do what you have to do here
+            // In your case, another loop.
+        }
+
+    }
 
 }
