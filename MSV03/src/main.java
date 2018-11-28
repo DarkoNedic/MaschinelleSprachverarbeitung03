@@ -15,6 +15,8 @@ public class main {
 	public static ArrayList<ArrayList<String>> lines = new ArrayList<>();
 
 	public static Map<String, HashMap<String, Integer>> emissions_map = new HashMap<>();
+	public static Map<String, Integer> emissions_tag_count = new HashMap<>();
+	public static Map<String, Double> emissions_matrix = new HashMap<>();
 	public static Map<String,Double> transitionMatrix;
 
 
@@ -94,16 +96,36 @@ public class main {
         		emissions_map.get(word).put(tag, val+1);
     		}
     	}
+    	if (emissions_tag_count.containsKey(tag)) {
+    		emissions_tag_count.put(tag, emissions_tag_count.get(tag)+1);
+    	} else {
+    		emissions_tag_count.put(tag, 1);
+    	}
     }
     
     private static void build_emissions_matrix() {
-		// TODO Auto-generated method stub
-		
+    	double val;
+    	for (Entry<String, HashMap<String, Integer>> e : emissions_map.entrySet()) {
+    		for (Entry<String, Integer> f : e.getValue().entrySet()) {
+    			val = (double) f.getValue()/(double) emissions_tag_count.get(f.getKey());
+    			if (e.getKey().equals("long")) {
+    				if (f.getKey().equals("jj")) {
+    					
+    				}
+    			}
+    			HashMap<String, Double> hmp = new HashMap<>();
+    			hmp.put(f.getKey(), val);
+    			emissions_matrix.put(e.getKey()+f.getKey(), val);
+    		}
+    	}
 	}
+    
+    public static double get_emission_entry(String word, String tag) {
+    	return emissions_matrix.get(word+tag);
+    }
 
 	public static void main(String[] args) throws IOException {
 		String path = "./brown_training";
-
 				
 		File[] files = read_folder(path);
 
