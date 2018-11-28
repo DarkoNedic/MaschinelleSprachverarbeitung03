@@ -17,7 +17,7 @@ public class main {
 	public static Map<String, HashMap<String, Integer>> emissions_map = new HashMap<>();
 	public static Map<String, Integer> emissions_tag_count = new HashMap<>();
 	public static Map<String, Double> emissions_matrix = new HashMap<>();
-	public static Map<String,Double> transitionMatrix;
+	public static Map<String,Map<String, Double>> transitionMatrix;
 
 
 	public static File[] read_folder(String path) {
@@ -63,7 +63,7 @@ public class main {
     	iterate_emissions();
     	build_emissions_matrix();
     }
-    
+
     public static void iterate_emissions() {
     	String word = null;
     	String tag = null;
@@ -102,7 +102,7 @@ public class main {
     		emissions_tag_count.put(tag, 1);
     	}
     }
-    
+
     private static void build_emissions_matrix() {
     	double val;
     	for (Entry<String, HashMap<String, Integer>> e : emissions_map.entrySet()) {
@@ -110,7 +110,7 @@ public class main {
     			val = (double) f.getValue()/(double) emissions_tag_count.get(f.getKey());
     			if (e.getKey().equals("long")) {
     				if (f.getKey().equals("jj")) {
-    					
+
     				}
     			}
     			HashMap<String, Double> hmp = new HashMap<>();
@@ -119,13 +119,14 @@ public class main {
     		}
     	}
 	}
-    
+
     public static double get_emission_entry(String word, String tag) {
     	return emissions_matrix.get(word+tag);
     }
 
 	public static void main(String[] args) throws IOException {
-		String path = "./brown_training";
+		String path = "./brown_training/test";
+
 				
 		File[] files = read_folder(path);
 
@@ -164,14 +165,28 @@ public class main {
 //        System.out.println("bla");
 
         transitionMatrix = new HashMap<>();
-
         for(Map.Entry<String, Map<String, Integer>> entry : states.entrySet()) {
             String key = entry.getKey();
-            Map value = entry.getValue();
+            Map<String, Integer> map = entry.getValue();
 
-            // do what you have to do here
-            // In your case, another loop.
+
+            double nennerCounter = 0;
+            for (Map.Entry<String, Integer> innerEntry : map.entrySet()) {
+                nennerCounter = nennerCounter + innerEntry.getValue();
+            }
+
+            Map<String, Double> temp = new HashMap<>();
+            for (Map.Entry<String, Integer> innerEntry : map.entrySet()) {
+                String innerKey = innerEntry.getKey();
+                double innerCount = (double) innerEntry.getValue();
+
+                double result = innerCount / nennerCounter;
+
+                temp.put(innerKey, result);
+            }
+            transitionMatrix.put(key, temp);
         }
+        System.out.println("bla");
 
     }
 
