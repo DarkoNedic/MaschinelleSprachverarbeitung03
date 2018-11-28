@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 public class main {
+	
+	public static ArrayList<Line> lines = new ArrayList<>();
 	
 	public static File[] read_folder(String path) {
 		File[] files = new File(path).listFiles();
@@ -20,12 +23,20 @@ public class main {
     }
     
     public static void readAllLines(File file, Charset cs) throws IOException {
+    	String regex = "/| ";
+    	String line = null;
+    	ArrayList<String> lineAL = new ArrayList<>();
         try (BufferedReader reader = Files.newBufferedReader(file.toPath(), cs)) {
             for (;;) {
-                String line = reader.readLine();
+            	line = reader.readLine();
                 if (line == null)
                     break;
-                System.out.println(line);
+                for (String g : line.split(regex)) {
+                	g = g.replace("	", "");
+                	if (g.equals("")) continue;
+                	lineAL.add(g);
+                }
+                lines.add(new Line(lineAL));
             }
         }
     }
@@ -33,11 +44,6 @@ public class main {
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		String path = "./brown_training";
-		System.out.println("Halo");
-
-		System.out.println("alb");
-
-		System.out.println("bla");
 
 				
 		File[] files = read_folder(path);
