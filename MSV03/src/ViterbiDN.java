@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public class Viterbi {
+public class ViterbiDN {
 	
 	public static Map<String, Node> all_tags1 = new HashMap<>();
 	public static Map<String, Node> all_tags2 = new HashMap<>();

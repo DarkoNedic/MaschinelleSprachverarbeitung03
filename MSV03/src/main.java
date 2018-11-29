@@ -54,8 +54,8 @@ public class main {
                 	g1 = g1.replace("	", "");
                 	word = g1.split("/(\\w+\\$*|\\W+\\$*)$")[0];
                 	tag = g1.split(".+/")[1];
-                	Viterbi.all_tags1.put(tag, new Node(null));
-                	Viterbi.all_tags2.put(tag, new Node(null));
+                	ViterbiDN.all_tags1.put(tag, new Node(null));
+                	ViterbiDN.all_tags2.put(tag, new Node(null));
                 	count++;
                 	lineAL.add(word);
                 	lineAL.add(tag);
