@@ -60,6 +60,7 @@ public class main {
                 	lineAL.add(word);
                 	lineAL.add(tag);
                 }
+                lines.add(lineAL);
                 if (count > count_max) {
                 	count_max = count;
                 	if (line.startsWith("For/in example/nn ,/, the/at officials/nns")) {
