@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,9 +28,12 @@ public class main {
 	
 	public static void load_file(File file) throws IOException {
     	//String str = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())), StandardCharsets.UTF_8);
-    	readAllLines(file, StandardCharsets.UTF_8);
+    	readAllLines(file, StandardCharsets.ISO_8859_1);
     	
     }
+	
+	static int count = 0;
+	static int count_max = 0;
     
     public static void readAllLines(File file, Charset cs) throws IOException {
     	String line = null;
@@ -48,16 +52,29 @@ public class main {
                 for (String g1 : line.split(" ")) {
                 	if (!g1.contains("/")) continue;
                 	g1 = g1.replace("	", "");
-                	word = g1.split("/\\w+$")[0];
+                	word = g1.split("/(\\w+\\$*|\\W+\\$*)$")[0];
                 	tag = g1.split(".+/")[1];
                 	Viterbi.all_tags1.put(tag, new Node(null));
                 	Viterbi.all_tags2.put(tag, new Node(null));
-                	//if (g1.equals("")) continue;
+                	count++;
                 	lineAL.add(word);
                 	lineAL.add(tag);
                 }
-                lines.add(lineAL);
+                if (count > count_max) {
+                	count_max = count;
+                	if (line.startsWith("For/in example/nn ,/, the/at officials/nns")) {
+                		for (String g1 : line.split(" ")) {
+                        	if (!g1.contains("/")) continue;
+                        	g1 = g1.replace("	", "");
+                        	word = g1.split("/(\\w+\\$*|\\W+\\$*)$")[0];
+                        	tag = g1.split(".+/")[1];
+                        	System.out.println(tag);
+                        }
+                	}
+                }
+                count=0;
             }
+            //System.out.println(count_max);
         }
     }
 
@@ -121,7 +138,7 @@ public class main {
     	if (emissions_matrix.containsKey(word+tag)) {
     		return emissions_matrix.get(word+tag);
     	} else {
-    		return (double) 0;
+    		return (double) 0.0;
     	}
     }
 
@@ -187,7 +204,7 @@ public class main {
             }
             transitionMatrix.put(key, temp);
         }
-        System.out.println("bla");
+        //System.out.println("bla");
 
     }
 
