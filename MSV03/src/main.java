@@ -50,6 +50,8 @@ public class main {
                 	g1 = g1.replace("	", "");
                 	word = g1.split("/\\w+$")[0];
                 	tag = g1.split(".+/")[1];
+                	Viterbi.all_tags1.put(tag, new Node(null));
+                	Viterbi.all_tags2.put(tag, new Node(null));
                 	//if (g1.equals("")) continue;
                 	lineAL.add(word);
                 	lineAL.add(tag);
@@ -108,11 +110,6 @@ public class main {
     	for (Entry<String, HashMap<String, Integer>> e : emissions_map.entrySet()) {
     		for (Entry<String, Integer> f : e.getValue().entrySet()) {
     			val = (double) f.getValue()/(double) emissions_tag_count.get(f.getKey());
-    			if (e.getKey().equals("long")) {
-    				if (f.getKey().equals("jj")) {
-
-    				}
-    			}
     			HashMap<String, Double> hmp = new HashMap<>();
     			hmp.put(f.getKey(), val);
     			emissions_matrix.put(e.getKey()+f.getKey(), val);
@@ -121,11 +118,15 @@ public class main {
 	}
 
     public static double get_emission_entry(String word, String tag) {
-    	return emissions_matrix.get(word+tag);
+    	if (emissions_matrix.containsKey(word+tag)) {
+    		return emissions_matrix.get(word+tag);
+    	} else {
+    		return (double) 0;
+    	}
     }
 
 	public static void main(String[] args) throws IOException {
-		String path = "./brown_training/test";
+		String path = "./brown_training";
 
 				
 		File[] files = read_folder(path);
