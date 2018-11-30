@@ -1,6 +1,5 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -50,8 +49,8 @@ public class main {
                 	g1 = g1.replace("	", "");
                 	word = g1.split("/\\w+$")[0];
                 	tag = g1.split(".+/")[1];
-                	Viterbi.all_tags1.put(tag, new Node(null));
-                	Viterbi.all_tags2.put(tag, new Node(null));
+                	Viterbi_Sed.all_tags1.put(tag, new Node(null));
+                	Viterbi_Sed.all_tags2.put(tag, new Node(null));
                 	//if (g1.equals("")) continue;
                 	lineAL.add(word);
                 	lineAL.add(tag);
