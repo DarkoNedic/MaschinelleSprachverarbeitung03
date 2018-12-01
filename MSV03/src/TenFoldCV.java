@@ -258,11 +258,12 @@ public class TenFoldCV {
 		}
 		
 		int fc = 0;
-		double precision_sum = 0.0;
+		ArrayList<Double> total_precision = new ArrayList<>();
 		for (String train_file : train_files) {
 			String[] argss = {"cv", train_file};
 			main.main(argss);
 			int fc_ = 0;
+			double precision_sum = 0.0;
 			ArrayList<String> path = new ArrayList<>();
 			for (String valid : read_lines2arraylist(new File(notags.get(fc)))) {
 				//System.out.println(valid);
@@ -277,8 +278,8 @@ public class TenFoldCV {
 					}
 				}
 				precision_sum += (float) ((float) matches / (float) truth.length);
-				System.out.print("Precision: " + (float) ((float) matches / (float) truth.length) + ", " + (float) matches + "/" + (float) truth.length);
-				System.out.println(" | Total: " + precision_sum/fc_);
+				//System.out.print("Precision: " + (float) ((float) matches / (float) truth.length) + ", " + (float) matches + "/" + (float) truth.length);
+				//System.out.println(" | Total: " + precision_sum/(fc_+1));
 				fc_++;
 				ViterbiDN.clear_map(ViterbiDN.all_tags1);
 				ViterbiDN.clear_map(ViterbiDN.all_tags2);
@@ -286,10 +287,18 @@ public class TenFoldCV {
 				ViterbiDN.all_tags2.remove("");
 				//if (fc_ == 13) break;
 			}
+			System.out.println(precision_sum/(fc_));
+			total_precision.add(precision_sum/(fc_));
 			fc++;
-			break;
-		}*/
+			//break;
+		}
 		
+		double total = 0.0;
+		for (double prec : total_precision) {
+			total += prec;
+		}
+		System.out.println("AVG: " + total/10);
+		*/
 	}
 
 }

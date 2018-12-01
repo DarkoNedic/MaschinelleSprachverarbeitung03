@@ -14,7 +14,6 @@ public class ViterbiDN {
 	
 	public static Map<String, Node> all_tags1 = new HashMap<>();
 	public static Map<String, Node> all_tags2 = new HashMap<>();
-	public static Map<String, Node> all_tags3 = new HashMap<>();
 	
 	public static int precision = 0;
 	
@@ -38,6 +37,7 @@ public class ViterbiDN {
 		boolean tags1 = true;
 		double new_prob = 0.0;
 		double tmp_prob = 0.0;
+		double new_factor = 0.0;
 		boolean path_added = false;
 		if (sa.length == 1) {
 			for (String g : sa) {
@@ -48,9 +48,12 @@ public class ViterbiDN {
 				if (!main.words.contains(g)) { // aus selbst gemessenen werten
 					best_emission = (double) 0.17;
 					state = "pps";
+					if (g.endsWith("ed")) {
+						best_emission = (double) 0.2;
+						state = "vbn";
+					}
 					n.prob = (1.0 + best_emission);
 					n.path.add(state);
-					//eval(n.path, truth);
 					return n.path;
 				}
 				for (Entry<String, Node> e : all_tags1.entrySet()) {
@@ -59,10 +62,8 @@ public class ViterbiDN {
 						state = e.getKey();
 					}
 				}
-				// n.prob = best_emission;
 				n.prob = (1.0 + best_emission);
 				n.path.add(state);
-				//eval(n.path, truth);
 				return n.path;
 			}
 		}
@@ -76,6 +77,10 @@ public class ViterbiDN {
 				if (!main.words.contains(g)) { // aus selbst gemessenen werten
 					best_emission = (double) 0.17;
 					state = "pps";
+					if (g.endsWith("ed")) {
+						best_emission = (double) 0.2;
+						state = "vbn";
+					}
 				} else {
 					for (Entry<String, Node> e : all_tags1.entrySet()) {
 						if (main.get_emission_entry(g, e.getKey()) > best_emission) {
@@ -84,7 +89,6 @@ public class ViterbiDN {
 						}
 					}
 				}
-				//n.prob = best_emission;
 				n.prob = (1.0+best_emission);
 				n.path.add(state);
 				all_tags1.put(state, n);
@@ -108,11 +112,32 @@ public class ViterbiDN {
 							}
 							tmp_prob = (max < tmp_prob) ? tmp_prob : max;
 							new_prob = (max < new_prob) ? new_prob : max;
+							if (g.endsWith("ed")) {
+								f.getValue().log_prob = Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob);
+								f.getValue().prob = f.getValue().log_prob;
+								f.getValue().path.clear();
+								f.getValue().path.addAll(e.getValue().path);
+								f.getValue().path.add("vbn");
+								break;
+							}
 						} else {
-							tmp_prob = (main.transitionMatrix.get(e.getKey()).get(f.getKey()) == null) ? 0.005 : main.transitionMatrix.get(e.getKey()).get(f.getKey());
+							tmp_prob = (main.transitionMatrix.get(e.getKey()).get(f.getKey()) == null) ? 0.00005 : main.transitionMatrix.get(e.getKey()).get(f.getKey());
 							//new_prob = Math.log(1.0+tmp_prob) + Math.log(e.getValue().prob) + Math.log(1.0+main.get_emission_entry(g, f.getKey()));
 							//new_prob = (Math.log10(1.0+main.get_emission_entry(g, f.getKey())) + Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob));
 							new_prob = tmp_prob * e.getValue().prob * main.get_emission_entry(g, f.getKey());
+							if (f.getValue().path.size() >= 3) {
+								String a = f.getValue().path.get(f.getValue().path.size()-1);
+								String b = f.getValue().path.get(f.getValue().path.size()-2);
+								String c = f.getValue().path.get(f.getValue().path.size()-3);
+								if (main.transitionMatrix.get(c).get(b) != null && main.transitionMatrix.get(b).get(a) != null) {
+									new_factor = main.transitionMatrix.get(c).get(b) * main.transitionMatrix.get(b).get(a);
+									new_factor = (new_factor > (double) 0.000000001) ? new_factor+0.07 : 0;
+								} else {
+									new_factor = 0.0;
+								}
+							}
+							new_prob += new_factor;
+							new_factor = 0.0;
 						}
 						if (f.getValue().prob < new_prob) { // set maximum path only for O(n*k^2)
 							f.getValue().prob = new_prob;
@@ -150,6 +175,14 @@ public class ViterbiDN {
 							}
 							tmp_prob = (max < tmp_prob) ? tmp_prob : max;
 							new_prob = (max < new_prob) ? new_prob : max;
+							if (g.endsWith("ed")) {
+								f.getValue().log_prob = Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob);
+								f.getValue().prob = f.getValue().log_prob;
+								f.getValue().path.clear();
+								f.getValue().path.addAll(e.getValue().path);
+								f.getValue().path.add("vbn");
+								break;
+							}
 						} else {
 							/*if (main.transitionMatrix.get(e.getKey()).get(f.getKey()) != null) {
 								if (main.transitionMatrix.get(e.getKey()).get(f.getKey()) > f.getValue().tmp_prob) {
@@ -157,10 +190,23 @@ public class ViterbiDN {
 								}
 								new_prob = (new_prob < tmp_prob * e.getValue().prob * main.get_emission_entry(g, f.getKey())) ? tmp_prob * e.getValue().prob * main.get_emission_entry(g, f.getKey()) : new_prob;
 							}*/
-							tmp_prob = (main.transitionMatrix.get(e.getKey()).get(f.getKey()) == null) ? 0.005 : main.transitionMatrix.get(e.getKey()).get(f.getKey());
+							tmp_prob = (main.transitionMatrix.get(e.getKey()).get(f.getKey()) == null) ? 0.00005 : main.transitionMatrix.get(e.getKey()).get(f.getKey());
 							//new_prob = Math.log(1.0+tmp_prob) + Math.log(e.getValue().prob) + Math.log(1.0+main.get_emission_entry(g, f.getKey()));
 							//new_prob = (Math.log10(1.0+main.get_emission_entry(g, f.getKey())) + Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob));
 							new_prob = tmp_prob * e.getValue().prob * main.get_emission_entry(g, f.getKey());
+							if (f.getValue().path.size() >= 3) {
+								String a = f.getValue().path.get(f.getValue().path.size()-1);
+								String b = f.getValue().path.get(f.getValue().path.size()-2);
+								String c = f.getValue().path.get(f.getValue().path.size()-3);
+								if (main.transitionMatrix.get(c).get(b) != null && main.transitionMatrix.get(b).get(a) != null) {
+									new_factor = main.transitionMatrix.get(c).get(b) * main.transitionMatrix.get(b).get(a);
+									new_factor = (new_factor > (double) 0.000000001) ? new_factor+0.07 : 0;
+								} else {
+									new_factor = 0.0;
+								}
+							}
+							new_prob += new_factor;
+							new_factor = 0.0;
 						}
 						if (f.getValue().prob < new_prob) { // set maximum path only for O(n*k^2)
 							f.getValue().prob = new_prob;
@@ -206,7 +252,6 @@ public class ViterbiDN {
 					}
 				}
 				//System.out.println(n.path.size());
-				//eval(n.path, truth);
 				return n.path;
 			}
 			
@@ -215,26 +260,8 @@ public class ViterbiDN {
 			count++;
 		}
 		
-		//eval(path, truth);
 		System.out.println("nulllll");
 		return path;
-	}
-	
-	public static void eval(ArrayList<String> path, String truth) {
-		for (String g : path) {
-			System.out.print(g);
-		}
-		System.out.println();
-		System.out.println(truth);
-		System.out.println(path.size());
-		String[] truth_arr = truth.split(" ");
-		for (int i = 0; i < path.size(); i++) {
-			if (path.get(i).equals(truth_arr[i])) {
-				System.out.println("match");
-			} else {
-				//System.out.println("fail");
-			}
-		}
 	}
 
 	public static void main(String[] args) throws IOException {
