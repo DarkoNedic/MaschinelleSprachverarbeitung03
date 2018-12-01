@@ -27,3 +27,7 @@ Fold | Precision
 AVG|0.6619899971659576
 |:-------------| :-----:|
 
+Missing:
+- Export matrices
+- Import matrices
+- Run program with the two modi which one can choose from by setting arguments at start
