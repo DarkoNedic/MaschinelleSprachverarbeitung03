@@ -8,12 +8,18 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class main {
 	
 	public static ArrayList<ArrayList<String>> lines = new ArrayList<>();
+	public static Set<String> words = new HashSet<>();
+	public static ArrayList<ArrayList<String>> lines_copy = lines;
+	public static ArrayList<ArrayList<String>> lines_test = new ArrayList<>();
+	public static ArrayList<String> test_set = new ArrayList<>();
 
 	public static Map<String, HashMap<String, Integer>> emissions_map = new HashMap<>();
 	public static Map<String, Integer> emissions_tag_count = new HashMap<>();
@@ -58,12 +64,13 @@ public class main {
                 	ViterbiDN.all_tags2.put(tag, new Node(null));
                 	count++;
                 	lineAL.add(word);
+                	words.add(word);
                 	lineAL.add(tag);
                 }
                 lines.add(lineAL);
-                if (count > count_max) {
+                if (count > count_max | false) {
                 	count_max = count;
-                	if (line.startsWith("For/in example/nn ,/, the/at officials/nns")) {
+                	if (line.startsWith("The/at Public/jj Service/nn Commission/nn")) {
                 		for (String g1 : line.split(" ")) {
                         	if (!g1.contains("/")) continue;
                         	g1 = g1.replace("	", "");
@@ -139,25 +146,10 @@ public class main {
     	if (emissions_matrix.containsKey(word+tag)) {
     		return emissions_matrix.get(word+tag);
     	} else {
-    		return (double) 0.0;
+    		return 0.0;
     	}
     }
-
-	public static void main(String[] args) throws IOException {
-		String path = "./brown_training";
-
-				
-		File[] files = read_folder(path);
-
-		for (File file : files) {
-			load_file(file);
-		}
-
-        emissions();
-        transitions();
-
-    }
-
+    
     private static void transitions()
     {
         Map<String, Map<String, Integer>> states = new HashMap<>();
@@ -181,7 +173,7 @@ public class main {
                 }
             }
         }
-//        System.out.println("bla");
+
 
         transitionMatrix = new HashMap<>();
         for(Map.Entry<String, Map<String, Integer>> entry : states.entrySet()) {
@@ -205,7 +197,34 @@ public class main {
             }
             transitionMatrix.put(key, temp);
         }
-        //System.out.println("bla");
+
+    }
+
+    
+    
+    private static void export() {
+		
+	}
+
+	public static void main(String[] args) throws IOException {
+		String path = "./brown_training";
+		if (args[0].equals("cv")) {
+			path = args[1];
+			load_file(new File(path));
+		} else {
+			File[] files = read_folder(path);
+
+			for (File file : files) {
+				load_file(file);
+			}
+		}
+		
+		
+
+		emissions();
+        transitions();
+        
+        export();
 
     }
 
