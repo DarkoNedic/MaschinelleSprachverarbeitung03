@@ -1,6 +1,5 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -37,10 +36,10 @@ public class main {
     	readAllLines(file, StandardCharsets.ISO_8859_1);
     	
     }
-	
+
 	static int count = 0;
 	static int count_max = 0;
-    
+
     public static void readAllLines(File file, Charset cs) throws IOException {
     	String line = null;
     	String word = null;
@@ -62,6 +61,8 @@ public class main {
                 	tag = g1.split(".+/")[1];
                 	ViterbiDN.all_tags1.put(tag, new Node(null));
                 	ViterbiDN.all_tags2.put(tag, new Node(null));
+//                    Viterbi_Sed.all_tags1.put(tag, new Node(null));
+//                    Viterbi_Sed.all_tags2.put(tag, new Node(null));
                 	count++;
                 	lineAL.add(word);
                 	words.add(word);
