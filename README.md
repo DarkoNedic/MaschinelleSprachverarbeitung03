@@ -26,7 +26,3 @@ Fold | Precision
 
 AVG|0.6622780910149866
 |:-------------| :-----:|
-
-Missing:
-- Import matrices
-- Run program in annotate mode
