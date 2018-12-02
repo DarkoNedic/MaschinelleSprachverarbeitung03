@@ -71,7 +71,7 @@ public class main {
                 	lineAL.add(tag);
                 }
                 lines.add(lineAL);
-                if (count > count_max | false) {
+                if (count > count_max && false) {
                 	count_max = count;
                 	if (line.startsWith("The/at Public/jj Service/nn Commission/nn")) {
                 		for (String g1 : line.split(" ")) {
@@ -223,6 +223,74 @@ public class main {
     		Files.write(Paths.get("./transitions"), ("####\n").getBytes(), StandardOpenOption.APPEND);
     	}
 	}
+    
+    private static void import_matrices() throws IOException {
+    	File file = new File("./emissions");
+    	String line;
+    	boolean isKey = true;
+    	String word;
+    	String tag = null;
+    	String key = null;
+    	try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
+    		for (;;) {
+            	line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                if (line.equals("")) {
+                    continue;
+                }
+                if (isKey) {
+                	isKey = false;
+                	word = line.split("##")[0];
+                	tag = line.split("##")[1];
+                	key = line;
+                	ViterbiDN.all_tags1.put(tag, new Node(null));
+                	ViterbiDN.all_tags2.put(tag, new Node(null));
+                	continue;
+                }
+                isKey = true;
+                //System.out.println(key + " : " + Double.parseDouble(line));
+                emissions_matrix.put(key, Double.parseDouble(line));
+    		}
+    	}
+    	
+    	file = new File("./transitions");
+    	boolean first = true;
+    	boolean val = false;
+    	isKey = true;
+    	Map<String, Double> value = null;
+    	transitionMatrix = new HashMap<>();
+    	try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
+    		for (;;) {
+            	line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                if (line.equals("")) {
+                    continue;
+                }
+                if (first) {
+                	first = false;
+                	key = line;
+                	value = new HashMap<>();
+                	continue;
+                }
+                if (line.equals("####")) {
+                	first = true;
+                	transitionMatrix.put(key, value);
+                	continue;
+                }
+                if (val) {
+                	val = false;
+                	value.put(tag, Double.parseDouble(line));
+                } else {
+                	val = true;
+                	tag = line;
+                }
+    		}
+    	}
+	}
 
 	public static void main(String[] args) throws IOException {
 		//String path = "./brown_training";
@@ -248,14 +316,17 @@ public class main {
 			emissions();
 	        transitions();
 	        export();
-		} else {
-			//File[] files = read_folder(path);
-
-			//for (File file : files) {
-			//	load_file(file);
-			//}
+		} else if (args[0].equals("annotate")) {
+			//String input_dir = args[1];
+			//String output_dir = args[2];
+			import_matrices();
+			export();
 		}
-		
+		//File[] files = read_folder(path);
+
+		//for (File file : files) {
+		//	load_file(file);
+		//}
         
 
     }
