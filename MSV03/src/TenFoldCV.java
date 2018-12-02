@@ -204,7 +204,7 @@ public class TenFoldCV {
 		ArrayList<String> valid;
 		File f = new File("./10foldCV");
 		f.mkdir();
-		for (int i = 1; i < 11; i++) {
+		for (int i = 1; i < n+1; i++) {
 			fold = folds.get(i-1);
 			valid = validations.get(i-1);
 			f = new File("./10foldCV/" + i);
@@ -229,7 +229,7 @@ public class TenFoldCV {
 		
 		ArrayList<String> train_files = new ArrayList<>();
 		ArrayList<String> valid_files = new ArrayList<>();
-		for (int i = 1; i < 11; i++) {
+		for (int i = 1; i < n+1; i++) {
 			files = read_folder("./10foldCV/" + i);
 			train_files.add(files[1].toString());
 			valid_files.add(files[0].toString());
@@ -243,19 +243,26 @@ public class TenFoldCV {
 		
 		
 		// dann das hier wieder weg-wegkommentieren
-		/*
-		File[] files;
-		ArrayList<String> train_files = new ArrayList<>();
-		ArrayList<String> valid_files = new ArrayList<>();
+		
+		//File[] files;
+		files = null;
+		//ArrayList<String> train_files = new ArrayList<>();
+		//ArrayList<String> valid_files = new ArrayList<>();
+		train_files = new ArrayList<>();
+		valid_files = new ArrayList<>();
 		ArrayList<String> nowords = new ArrayList<>();
 		ArrayList<String> notags = new ArrayList<>();
-		for (int i = 1; i < 11; i++) {
+		for (int i = 1; i < n+1; i++) {
 			files = read_folder("./10foldCV/" + i);
 			train_files.add(files[2].toString());
 			valid_files.add(files[0].toString());
 			nowords.add(files[1].toString());
 			notags.add(files[3].toString());
 		}
+		
+		System.out.println("Prepared validation data for cross-validation.\n");
+		
+		System.out.println("Starting 10-fold cross-validation...");
 		
 		int fc = 0;
 		ArrayList<Double> total_precision = new ArrayList<>();
@@ -264,16 +271,17 @@ public class TenFoldCV {
 			main.main(argss);
 			int fc_ = 0;
 			double precision_sum = 0.0;
-			ArrayList<String> path = new ArrayList<>();
-			for (String valid : read_lines2arraylist(new File(notags.get(fc)))) {
+			//ArrayList<String> path = new ArrayList<>();
+			ArrayList<String> path2 = new ArrayList<>();
+			for (String validd : read_lines2arraylist(new File(notags.get(fc)))) {
 				//System.out.println(valid);
-				path.clear();
-				path = ViterbiDN.viterbi(valid, "");
+				path2.clear();
+				path2 = ViterbiDN.viterbi(validd, "");
 				String[] truth = read_lines2arraylist(new File(nowords.get(fc))).get(fc_).split(" ");
 				int matches = 0;
 				for (int i = 0; i < truth.length; i++) {
 					//System.out.println(truth[i] + " : " + path.get(i));
-					if (path.get(i).equals(truth[i])) {
+					if (path2.get(i).equals(truth[i])) {
 						matches++;
 					}
 				}
@@ -297,8 +305,8 @@ public class TenFoldCV {
 		for (double prec : total_precision) {
 			total += prec;
 		}
-		System.out.println("AVG: " + total/10);
-		*/
+		System.out.println("AVG: " + total/n);
+		
 	}
 
 }

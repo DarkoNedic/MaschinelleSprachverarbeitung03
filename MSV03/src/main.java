@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -138,14 +140,14 @@ public class main {
     			val = (double) f.getValue()/(double) emissions_tag_count.get(f.getKey());
     			HashMap<String, Double> hmp = new HashMap<>();
     			hmp.put(f.getKey(), val);
-    			emissions_matrix.put(e.getKey()+f.getKey(), val);
+    			emissions_matrix.put(e.getKey()+"##"+f.getKey(), val);
     		}
     	}
 	}
 
     public static double get_emission_entry(String word, String tag) {
-    	if (emissions_matrix.containsKey(word+tag)) {
-    		return emissions_matrix.get(word+tag);
+    	if (emissions_matrix.containsKey(word+"##"+tag)) {
+    		return emissions_matrix.get(word+"##"+tag);
     	} else {
     		return 0.0;
     	}
@@ -203,29 +205,58 @@ public class main {
 
     
     
-    private static void export() {
-		
+    private static void export() throws IOException {
+    	File f = new File("./emissions");
+    	f.createNewFile();
+    	f = new File("./transitions");
+    	f.createNewFile();
+    	for (Entry<String, Double> e : emissions_matrix.entrySet()) {
+    		Files.write(Paths.get("./emissions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
+    		Files.write(Paths.get("./emissions"), (e.getValue()+"\n").getBytes(), StandardOpenOption.APPEND);
+    	}
+    	for (Entry<String,Map<String, Double>> e : transitionMatrix.entrySet()) {
+    		Files.write(Paths.get("./transitions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
+    		for (Entry<String, Double> i : e.getValue().entrySet()) {
+    			Files.write(Paths.get("./transitions"), (i.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
+    			Files.write(Paths.get("./transitions"), (i.getValue()+"\n").getBytes(), StandardOpenOption.APPEND);
+    		}
+    		Files.write(Paths.get("./transitions"), ("####\n").getBytes(), StandardOpenOption.APPEND);
+    	}
 	}
 
 	public static void main(String[] args) throws IOException {
-		String path = "./brown_training";
+		//String path = "./brown_training";
+		//File[] files = read_folder(path);
+		//for (File file : files) {
+		//	load_file(file);
+		//}
+		/*emissions();
+        transitions();
+        export();
+        System.exit(-1);*/
 		if (args[0].equals("cv")) {
-			path = args[1];
+			String path = args[1];
 			load_file(new File(path));
-		} else {
+			emissions();
+	        transitions();
+		} else if (args[0].equals("train")) {
+			String path = args[1];
 			File[] files = read_folder(path);
-
 			for (File file : files) {
 				load_file(file);
 			}
+			emissions();
+	        transitions();
+	        export();
+		} else {
+			//File[] files = read_folder(path);
+
+			//for (File file : files) {
+			//	load_file(file);
+			//}
 		}
 		
-		
-
-		emissions();
-        transitions();
         
-        export();
 
     }
 
