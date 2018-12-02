@@ -278,7 +278,7 @@ public class ViterbiDN {
 		//s = "For example , the officials of Poughkeepsie town ( township ) where the project is located think highly of it because it simplifies their snow clearing problem .";
 		//s = "and ( C ) to finance , for not more than three years beyond the end of said period , such activities as are required to correlate , coordinate , and round out the results of studies and research undertaken pursuant to this Act : Provided , That funds available in any one year for research and development may , subject to the approval of the Secretary of State to assure that such activities are consistent with the foreign policy objectives of the United States , be expended in cooperation with public or private agencies in foreign countries in the development of processes useful to the program in the United States : And provided further , That every such contract or agreement made with any public or private agency in a foreign country shall contain provisions effective to insure that the results or information developed in connection therewith shall be available without cost to the United States for the use of the United States throughout the world and for the use of the general public within the United States .";
 		//s = "and ( C ) to finance , for not more than three years beyond the end of said period , such";
-		s = "Happily for posterity , then , the Boston Association did not actually command Parker to leave the room , though it came too close for comfort to what would have been an unforgivable brutality .";
+		s = "Rookie Ron Nischwitz continued his pinpoint pitching Monday night as the Bears made it two straight over Indianapolis , 5-3 .";
 		ArrayList<String> path = viterbi(s, s);
 		for (String g : path) {
 			System.out.println(g);

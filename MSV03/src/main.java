@@ -228,7 +228,7 @@ public class main {
     	File file = new File("./emissions");
     	String line;
     	boolean isKey = true;
-    	String word;
+    	String word = null;
     	String tag = null;
     	String key = null;
     	try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
@@ -245,6 +245,7 @@ public class main {
                 	word = line.split("##")[0];
                 	tag = line.split("##")[1];
                 	key = line;
+                	words.add(word);
                 	ViterbiDN.all_tags1.put(tag, new Node(null));
                 	ViterbiDN.all_tags2.put(tag, new Node(null));
                 	continue;
@@ -252,7 +253,9 @@ public class main {
                 isKey = true;
                 //System.out.println(key + " : " + Double.parseDouble(line));
                 emissions_matrix.put(key, Double.parseDouble(line));
+                //add_emissions(word, tag);
     		}
+    		//build_emissions_matrix();
     	}
     	
     	file = new File("./transitions");
@@ -291,17 +294,34 @@ public class main {
     		}
     	}
 	}
+    
+    public static void readValidationFile(File file) throws IOException {
+		String line = null;
+		ArrayList<String> lineAL_ = new ArrayList<>();
+		try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
+			for (;;) {
+				line = reader.readLine();
+				if (line == null) {
+					break;
+				}
+				if (line.equals("")) {
+					continue;
+				}
+				lineAL_.add(line);
+			}
+			lines.add(lineAL_);
+		}
+	}
 
+    static boolean annotate = false;
 	public static void main(String[] args) throws IOException {
-		//String path = "./brown_training";
-		//File[] files = read_folder(path);
-		//for (File file : files) {
-		//	load_file(file);
-		//}
-		/*emissions();
-        transitions();
-        export();
-        System.exit(-1);*/
+		/*String pathh = "./brown_training";
+		File[] filess = read_folder(pathh);
+		for (File file : filess) {
+			load_file(file);
+		}
+		emissions();
+		transitions();*/
 		if (args[0].equals("cv")) {
 			String path = args[1];
 			load_file(new File(path));
@@ -317,11 +337,53 @@ public class main {
 	        transitions();
 	        export();
 		} else if (args[0].equals("annotate")) {
-			//String input_dir = args[1];
-			//String output_dir = args[2];
+			annotate = true;
+			String input_dir = args[1];
+			String output_dir = args[2];
+			File[] files = read_folder(input_dir);
+			for (File file : files) {
+				if (file.getName().startsWith(".")) continue;
+				TenFoldCV.clean_valid(file, StandardCharsets.ISO_8859_1);
+			}
 			import_matrices();
-			export();
+			System.out.println(ViterbiDN.all_tags1.size());
+			files = read_folder(input_dir);
+			for (File file : files) {
+				ArrayList<ArrayList<String>> results = new ArrayList<>();
+				if (file.getName().startsWith(".") || !file.getName().startsWith("notags-")) continue;
+				ArrayList<String> fileAL = TenFoldCV.read_lines2arraylist(file);
+				for (String g : fileAL) {
+					results.add(ViterbiDN.viterbi(g, ""));
+					ViterbiDN.clear_map(ViterbiDN.all_tags1);
+					ViterbiDN.clear_map(ViterbiDN.all_tags2);
+				}
+				File f = new File(output_dir + "/" + file.getName().substring(7));
+				f.createNewFile();
+				String[] g;
+				ArrayList<String> res;
+				String wrt = null;
+				//for (ArrayList<String> result : results) {
+				for (int i = 0; i < results.size(); i++) {
+					wrt = "";
+					g = fileAL.get(i).split(" ");
+					res = results.get(i);
+					for (int j = 0; j < g.length; j++) wrt += " " + g[j] + "/" + res.get(j);
+					//for (String h : g) wrt = h+"/"+res[i];
+					Files.write(Paths.get(f.getPath()), (wrt.substring(1) + "\n").getBytes(), StandardOpenOption.APPEND);
+				}
+			}
+			//File file = new File(input_dir + "/notags");
 		}
+		/*String path = "./brown_training";
+		File[] files = read_folder(path);
+		for (File file : files) {
+			load_file(file);
+		}
+		emissions();
+		transitions();*/
+		
+		//export();
+		//System.exit(-1);
 		//File[] files = read_folder(path);
 
 		//for (File file : files) {

@@ -125,19 +125,33 @@ public class TenFoldCV {
 
 			}
 			
-			File f = new File(file.getParent() + "/notags");
-			f.createNewFile();
-			f = new File(file.getParent() + "/nowords");
-			f.createNewFile();
+			if(!main.annotate) {
+				File f = new File(file.getParent() + "/notags");
+				f.createNewFile();
+				f = new File(file.getParent() + "/nowords");
+				f.createNewFile();
+
+				for (String sentence : sentences) {
+					sentence += "\n";
+					Files.write(Paths.get(file.getParent() + "/notags"), sentence.getBytes(),
+							StandardOpenOption.APPEND);
+				}
+
+				for (String tag_sequence : tag_sequences) {
+					tag_sequence += "\n";
+					Files.write(Paths.get(file.getParent() + "/nowords"), tag_sequence.getBytes(),
+							StandardOpenOption.APPEND);
+				}
 			
-			for (String sentence : sentences) {
-				sentence += "\n";
-				Files.write(Paths.get(file.getParent() + "/notags"), sentence.getBytes(), StandardOpenOption.APPEND);
-			}
-			
-			for (String tag_sequence : tag_sequences) {
-				tag_sequence += "\n";
-				Files.write(Paths.get(file.getParent() + "/nowords"), tag_sequence.getBytes(), StandardOpenOption.APPEND);
+			} else {
+				File f = new File(file.getParent() + "/notags-" + file.getName());
+				f.createNewFile();
+				
+				for (String sentence : sentences) {
+					sentence += "\n";
+					Files.write(Paths.get(file.getParent() + "/notags-" + file.getName()), sentence.getBytes(),
+							StandardOpenOption.APPEND);
+				}
 			}
 
 		}
