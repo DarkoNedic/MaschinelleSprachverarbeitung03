@@ -6,5 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="/Users/darko/Documents/GitHub/MaschinelleSprachverarbeitung03/MSV03/ext_jars/guava-26.0-jre.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

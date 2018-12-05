@@ -34,7 +34,6 @@ public class main {
 	}
 	
 	public static void load_file(File file) throws IOException {
-    	//String str = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())), StandardCharsets.UTF_8);
     	readAllLines(file, StandardCharsets.ISO_8859_1);
     	
     }
@@ -71,21 +70,8 @@ public class main {
                 	lineAL.add(tag);
                 }
                 lines.add(lineAL);
-                if (count > count_max && false) {
-                	count_max = count;
-                	if (line.startsWith("The/at Public/jj Service/nn Commission/nn")) {
-                		for (String g1 : line.split(" ")) {
-                        	if (!g1.contains("/")) continue;
-                        	g1 = g1.replace("	", "");
-                        	word = g1.split("/(\\w+\\$*|\\W+\\$*)$")[0];
-                        	tag = g1.split(".+/")[1];
-                        	System.out.println(tag);
-                        }
-                	}
-                }
                 count=0;
             }
-            //System.out.println(count_max);
         }
     }
 
@@ -214,6 +200,7 @@ public class main {
     		Files.write(Paths.get("./emissions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
     		Files.write(Paths.get("./emissions"), (e.getValue()+"\n").getBytes(), StandardOpenOption.APPEND);
     	}
+    	System.out.println("Emission matrix exported.");
     	for (Entry<String,Map<String, Double>> e : transitionMatrix.entrySet()) {
     		Files.write(Paths.get("./transitions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
     		for (Entry<String, Double> i : e.getValue().entrySet()) {
@@ -222,6 +209,7 @@ public class main {
     		}
     		Files.write(Paths.get("./transitions"), ("####\n").getBytes(), StandardOpenOption.APPEND);
     	}
+    	System.out.println("Transition matrix exported.");
 	}
     
     private static void import_matrices() throws IOException {
@@ -315,19 +303,17 @@ public class main {
 
     static boolean annotate = false;
 	public static void main(String[] args) throws IOException {
-		/*String pathh = "./brown_training";
-		File[] filess = read_folder(pathh);
-		for (File file : filess) {
-			load_file(file);
-		}
-		emissions();
-		transitions();*/
-		if (args[0].equals("cv")) {
+		if (args[0].equals("cv") && args.length == 2) {
+			System.out.println("Mode = Cross Validation");
+			//TenFoldCV.main("./brown_training");
+			TenFoldCV.main(args[1]);
+		} else if (args[0].equals("10cv") && args.length == 2) {
 			String path = args[1];
 			load_file(new File(path));
 			emissions();
 	        transitions();
 		} else if (args[0].equals("train")) {
+			System.out.println("Mode = Train");
 			String path = args[1];
 			File[] files = read_folder(path);
 			for (File file : files) {
@@ -337,6 +323,7 @@ public class main {
 	        transitions();
 	        export();
 		} else if (args[0].equals("annotate")) {
+			System.out.println("Mode = Annotate");
 			annotate = true;
 			String input_dir = args[1];
 			String output_dir = args[2];
@@ -346,7 +333,6 @@ public class main {
 				TenFoldCV.clean_valid(file, StandardCharsets.ISO_8859_1);
 			}
 			import_matrices();
-			System.out.println(ViterbiDN.all_tags1.size());
 			files = read_folder(input_dir);
 			for (File file : files) {
 				ArrayList<ArrayList<String>> results = new ArrayList<>();
@@ -362,33 +348,17 @@ public class main {
 				String[] g;
 				ArrayList<String> res;
 				String wrt = null;
-				//for (ArrayList<String> result : results) {
 				for (int i = 0; i < results.size(); i++) {
 					wrt = "";
 					g = fileAL.get(i).split(" ");
 					res = results.get(i);
 					for (int j = 0; j < g.length; j++) wrt += " " + g[j] + "/" + res.get(j);
-					//for (String h : g) wrt = h+"/"+res[i];
 					Files.write(Paths.get(f.getPath()), (wrt.substring(1) + "\n").getBytes(), StandardOpenOption.APPEND);
 				}
+				file.delete();
 			}
-			//File file = new File(input_dir + "/notags");
+			System.out.println("Annotation finished.");
 		}
-		/*String path = "./brown_training";
-		File[] files = read_folder(path);
-		for (File file : files) {
-			load_file(file);
-		}
-		emissions();
-		transitions();*/
-		
-		//export();
-		//System.exit(-1);
-		//File[] files = read_folder(path);
-
-		//for (File file : files) {
-		//	load_file(file);
-		//}
         
 
     }

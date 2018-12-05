@@ -14,6 +14,7 @@ public class ViterbiDN {
 	
 	public static Map<String, Node> all_tags1 = new HashMap<>();
 	public static Map<String, Node> all_tags2 = new HashMap<>();
+	public static Map<String, Node> all_tags_tmp = null;
 	
 	public static int precision = 0;
 	
@@ -33,13 +34,11 @@ public class ViterbiDN {
 		int count = 0;
 		String[] sa = s.split(" ");
 		int len = sa.length;
-		// tags1 has latest entries
-		boolean tags1 = true;
 		double new_prob = 0.0;
 		double tmp_prob = 0.0;
 		double new_factor = 0.0;
 		boolean path_added = false;
-		if (sa.length == 1) {
+		if (sa.length == 1) { // if string is only one word long
 			for (String g : sa) {
 				Node n = new Node(path);
 				n = new Node(path);
@@ -97,7 +96,6 @@ public class ViterbiDN {
 			}
 			
 
-			if (tags1) {
 				clear_map(all_tags2);
 				for (Entry<String, Node> e : all_tags1.entrySet()) {
 					if (e.getValue().prob == 0.0) continue;
@@ -108,11 +106,10 @@ public class ViterbiDN {
 							if (main.transitionMatrix.get(e.getKey()).get(f.getKey()) == null) continue;
 							if (max < main.transitionMatrix.get(e.getKey()).get(f.getKey())) {
 								max = main.transitionMatrix.get(e.getKey()).get(f.getKey());
-								//System.out.println(max + ":KETA " + e.getKey() + ", " + f.getKey());
 							}
 							tmp_prob = (max < tmp_prob) ? tmp_prob : max;
 							new_prob = (max < new_prob) ? new_prob : max;
-							if (g.endsWith("ed")) {
+							if (g.endsWith("ed")) { // most of times words ending with ed are verbs -> State = vbn
 								f.getValue().log_prob = Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob);
 								f.getValue().prob = f.getValue().log_prob;
 								f.getValue().path.clear();
@@ -158,100 +155,20 @@ public class ViterbiDN {
 						f.getValue().prob = f.getValue().log_prob;
 					}
 				}
-				tags1 = false;
-			} else {
-				clear_map(all_tags1);
-				for (Entry<String, Node> e : all_tags2.entrySet()) {
-					if (e.getValue().prob == 0.0) continue;
-					double max = 0.0;
-					for (Entry<String, Node> f : all_tags1.entrySet()) {
-						if (!all_tags1.containsKey(e.getKey()) || !all_tags2.containsKey(e.getKey())) continue;
-						if (!main.words.contains(g)) {
-							//System.out.println(main.transitionMatrix.get("wrb").get("nil") + " keta");
-							if (main.transitionMatrix.get(e.getKey()).get(f.getKey()) == null) continue;
-							if (max < main.transitionMatrix.get(e.getKey()).get(f.getKey())) {
-								max = main.transitionMatrix.get(e.getKey()).get(f.getKey());
-								//System.out.println(max + ": " + e.getKey() + ", " + f.getKey());
-							}
-							tmp_prob = (max < tmp_prob) ? tmp_prob : max;
-							new_prob = (max < new_prob) ? new_prob : max;
-							if (g.endsWith("ed")) {
-								f.getValue().log_prob = Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob);
-								f.getValue().prob = f.getValue().log_prob;
-								f.getValue().path.clear();
-								f.getValue().path.addAll(e.getValue().path);
-								f.getValue().path.add("vbn");
-								break;
-							}
-						} else {
-							/*if (main.transitionMatrix.get(e.getKey()).get(f.getKey()) != null) {
-								if (main.transitionMatrix.get(e.getKey()).get(f.getKey()) > f.getValue().tmp_prob) {
-									tmp_prob = main.transitionMatrix.get(e.getKey()).get(f.getKey());
-								}
-								new_prob = (new_prob < tmp_prob * e.getValue().prob * main.get_emission_entry(g, f.getKey())) ? tmp_prob * e.getValue().prob * main.get_emission_entry(g, f.getKey()) : new_prob;
-							}*/
-							tmp_prob = (main.transitionMatrix.get(e.getKey()).get(f.getKey()) == null) ? 0.00005 : main.transitionMatrix.get(e.getKey()).get(f.getKey());
-							//new_prob = Math.log(1.0+tmp_prob) + Math.log(e.getValue().prob) + Math.log(1.0+main.get_emission_entry(g, f.getKey()));
-							//new_prob = (Math.log10(1.0+main.get_emission_entry(g, f.getKey())) + Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob));
-							new_prob = tmp_prob * e.getValue().prob * main.get_emission_entry(g, f.getKey());
-							if (f.getValue().path.size() >= 3) {
-								String a = f.getValue().path.get(f.getValue().path.size()-1);
-								String b = f.getValue().path.get(f.getValue().path.size()-2);
-								String c = f.getValue().path.get(f.getValue().path.size()-3);
-								if (main.transitionMatrix.get(c).get(b) != null && main.transitionMatrix.get(b).get(a) != null) {
-									new_factor = main.transitionMatrix.get(c).get(b) * main.transitionMatrix.get(b).get(a);
-									new_factor = (new_factor > (double) 0.000000001) ? new_factor+0.07 : 0;
-								} else {
-									new_factor = 0.0;
-								}
-							}
-							new_prob += new_factor;
-							new_factor = 0.0;
-						}
-						if (f.getValue().prob < new_prob) { // set maximum path only for O(n*k^2)
-							f.getValue().prob = new_prob;
-							f.getValue().tmp_prob = tmp_prob;
-							f.getValue().log_prob = (Math.log10(1.0+main.get_emission_entry(g, f.getKey())) + Math.log10(1.0+tmp_prob) + Math.log10(1.0+e.getValue().prob));
-							f.getValue().path.clear();
-							f.getValue().path.addAll(e.getValue().path);
-							if (path_added) {
-								f.getValue().path.remove(f.getValue().path.size()-1);
-								f.getValue().path.add(f.getKey());
-							} else {
-								f.getValue().path.add(f.getKey());
-								path_added = true;
-							}
-							
-						}
-						path_added = false;
-					}
-					for (Entry<String, Node> f : all_tags1.entrySet()) {
-						f.getValue().prob = f.getValue().log_prob;
-					}
-				}
-				tags1 = true;
-			}
+				all_tags_tmp = all_tags1;
+				all_tags1 = all_tags2;
+				all_tags2 = all_tags_tmp;
 
 			// if last
 			if (count == len - 1) {
 				double largest = 0.0;
 				Node n = null;
-				if (tags1) {
 					for (Entry<String, Node> e : all_tags1.entrySet()) {
 						if (largest < e.getValue().prob) {
 							largest = e.getValue().prob;
 							n = e.getValue();
 						}
 					}
-				} else {
-					for (Entry<String, Node> e : all_tags2.entrySet()) {
-						if (largest < e.getValue().prob) {
-							largest = e.getValue().prob;
-							n = e.getValue();
-						}
-					}
-				}
-				//System.out.println(n.path.size());
 				return n.path;
 			}
 			
@@ -260,7 +177,7 @@ public class ViterbiDN {
 			count++;
 		}
 		
-		System.out.println("nulllll");
+		//System.out.println("nulllll");
 		return path;
 	}
 
@@ -274,11 +191,11 @@ public class ViterbiDN {
 		
 		//System.out.println((double) 0.1234567891234567891234567891234567865456432536432563245465743516425346546356);
 		//System.out.println(all_tags1.size());
-		String s = "The Public Service Commission has ruled that this is not a public utility , subject to their many regulations .";		
+		String s = "The Public Service Commission has ruled this is not a public utility , subject to their many regulations .";		
 		//s = "For example , the officials of Poughkeepsie town ( township ) where the project is located think highly of it because it simplifies their snow clearing problem .";
 		//s = "and ( C ) to finance , for not more than three years beyond the end of said period , such activities as are required to correlate , coordinate , and round out the results of studies and research undertaken pursuant to this Act : Provided , That funds available in any one year for research and development may , subject to the approval of the Secretary of State to assure that such activities are consistent with the foreign policy objectives of the United States , be expended in cooperation with public or private agencies in foreign countries in the development of processes useful to the program in the United States : And provided further , That every such contract or agreement made with any public or private agency in a foreign country shall contain provisions effective to insure that the results or information developed in connection therewith shall be available without cost to the United States for the use of the United States throughout the world and for the use of the general public within the United States .";
 		//s = "and ( C ) to finance , for not more than three years beyond the end of said period , such";
-		s = "Rookie Ron Nischwitz continued his pinpoint pitching Monday night as the Bears made it two straight over Indianapolis , 5-3 .";
+		//s = "Rookie Ron Nischwitz continued his pinpoint pitching Monday night as the Bears made it two straight over Indianapolis , 5-3 .";
 		ArrayList<String> path = viterbi(s, s);
 		for (String g : path) {
 			System.out.println(g);

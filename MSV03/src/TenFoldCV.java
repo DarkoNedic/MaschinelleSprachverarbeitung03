@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharSink;
+import com.google.common.io.FileWriteMode;
+//import com.google.common.io.Files;
+
 public class TenFoldCV {
 	
 	public static ArrayList<ArrayList<String>> folds = new ArrayList<>();
@@ -79,9 +84,17 @@ public class TenFoldCV {
 	public static void write(int n, String g, boolean train) throws IOException {
 		g = g + "\n";
 		if (train) {
-			Files.write(Paths.get("./10foldCV/" + n + "/train"), g.getBytes(), StandardOpenOption.APPEND);
+			//Files.write(Paths.get("./10foldCV/" + n + "/train"), g.getBytes(), StandardOpenOption.APPEND);
+			File file = new File("./10foldCV/" + n + "/train");
+			CharSink chs = com.google.common.io.Files.asCharSink(
+				      file, Charsets.UTF_8, FileWriteMode.APPEND);
+				    chs.write(g);
 		} else {
-			Files.write(Paths.get("./10foldCV/" + n + "/valid"), g.getBytes(), StandardOpenOption.APPEND);
+			//Files.write(Paths.get("./10foldCV/" + n + "/valid"), g.getBytes(), StandardOpenOption.APPEND);
+			File file = new File("./10foldCV/" + n + "/valid");
+			CharSink chs = com.google.common.io.Files.asCharSink(
+				      file, Charsets.UTF_8, FileWriteMode.APPEND);
+				    chs.write(g);
 		}
 	}
 	
@@ -179,14 +192,15 @@ public class TenFoldCV {
 	}
 	
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String args) throws IOException {
 		// TODO Auto-generated method stub
 		// wenn einmal ausgeführt, werden die daten
 		// auf der platte gespeichert. Ab dann kann
 		// ab folgender Zeile kommentiert werden bis 241
 		int n = 10;
 		
-		String path = "./brown_training";
+		//String path = "./brown_training";
+		String path = args;
 
 		File[] files = read_folder(path);
 
@@ -281,7 +295,7 @@ public class TenFoldCV {
 		int fc = 0;
 		ArrayList<Double> total_precision = new ArrayList<>();
 		for (String train_file : train_files) {
-			String[] argss = {"cv", train_file};
+			String[] argss = {"10cv", train_file};
 			main.main(argss);
 			int fc_ = 0;
 			double precision_sum = 0.0;
@@ -294,7 +308,6 @@ public class TenFoldCV {
 				String[] truth = read_lines2arraylist(new File(nowords.get(fc))).get(fc_).split(" ");
 				int matches = 0;
 				for (int i = 0; i < truth.length; i++) {
-					//System.out.println(truth[i] + " : " + path.get(i));
 					if (path2.get(i).equals(truth[i])) {
 						matches++;
 					}
@@ -307,19 +320,36 @@ public class TenFoldCV {
 				ViterbiDN.clear_map(ViterbiDN.all_tags2);
 				ViterbiDN.all_tags1.remove("");
 				ViterbiDN.all_tags2.remove("");
-				//if (fc_ == 13) break;
 			}
-			System.out.println(precision_sum/(fc_));
+			System.out.println("Fold " + fc + " precision: " + precision_sum/(fc_));
 			total_precision.add(precision_sum/(fc_));
 			fc++;
-			//break;
 		}
 		
 		double total = 0.0;
 		for (double prec : total_precision) {
 			total += prec;
 		}
-		System.out.println("AVG: " + total/n);
+		
+		// delete temporary files
+		f = new File("./10foldCV/");
+		String[] entries = f.list();
+		for (String s : entries) {
+			File currentFolder = new File("./10foldCV/" + s);
+			if (s.startsWith(".")) {
+				currentFolder.delete();
+				continue;
+			}
+			String[] entries2 = currentFolder.list();
+			for (String g : entries2) {
+				File currentFile = new File("./10foldCV/" + s, g);
+				currentFile.delete();
+			}
+			currentFolder.delete();
+		}
+		f.delete();
+		
+		System.out.println("avg. Precision: " + total/n);
 		
 	}
 

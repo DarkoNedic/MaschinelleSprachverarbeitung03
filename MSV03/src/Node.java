@@ -1,8 +1,7 @@
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-public  class Node {
-		//Map<String, Double> all_tags = new HashMap<>();
+public class Node {
 		ArrayList<String> path;
 		double prob;
 		double tmp_prob;
