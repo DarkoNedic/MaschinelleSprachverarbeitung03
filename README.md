@@ -26,3 +26,5 @@ Fold 10 | 0.8927222977367482
 
 avg. Precision | 0.895822765047828
 |:-------------| :-----:|
+
+![terminal result image](https://raw.githubusercontent.com/DarkoNedic/MaschinelleSprachverarbeitung03/master/result.png)
