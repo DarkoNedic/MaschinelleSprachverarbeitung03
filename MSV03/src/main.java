@@ -1,10 +1,13 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,10 +63,10 @@ public class main {
                 	g1 = g1.replace("	", "");
                 	word = g1.split("/(\\w+\\$*|\\W+\\$*)$")[0];
                 	tag = g1.split(".+/")[1];
-                	ViterbiDN.all_tags1.put(tag, new Node(null));
-                	ViterbiDN.all_tags2.put(tag, new Node(null));
-//                    Viterbi_Sed.all_tags1.put(tag, new Node(null));
-//                    Viterbi_Sed.all_tags2.put(tag, new Node(null));
+//                	ViterbiDN.all_tags1.put(tag, new Node(null));
+//                	ViterbiDN.all_tags2.put(tag, new Node(null));
+                    Viterbi_Sed.all_tags1.put(tag, new Node(null));
+                    Viterbi_Sed.all_tags2.put(tag, new Node(null));
                 	count++;
                 	lineAL.add(word);
                 	words.add(word);
@@ -76,6 +79,11 @@ public class main {
     }
 
     public static void emissions() {
+    	emissions_map.clear();
+    	emissions_matrix.clear();
+    	if (transitionMatrix != null) {
+    		transitionMatrix.clear();
+    	}
     	iterate_emissions();
     	build_emissions_matrix();
     }
@@ -135,7 +143,7 @@ public class main {
     	if (emissions_matrix.containsKey(word+"##"+tag)) {
     		return emissions_matrix.get(word+"##"+tag);
     	} else {
-    		return 0.0;
+    		return 0.000001;
     	}
     }
     
@@ -192,27 +200,51 @@ public class main {
     
     
     private static void export() throws IOException {
-    	File f = new File("./emissions");
+    	File f = new File("/tmp/emissions");
     	f.createNewFile();
-    	f = new File("./transitions");
+    	f.setExecutable(true, false);
+        f.setReadable(true, false);
+        f.setWritable(true, false);
+    	f = new File("/tmp/transitions");
     	f.createNewFile();
+    	//String write = "";
     	for (Entry<String, Double> e : emissions_matrix.entrySet()) {
-    		Files.write(Paths.get("./emissions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
-    		Files.write(Paths.get("./emissions"), (e.getValue()+"\n").getBytes(), StandardOpenOption.APPEND);
+    		//write += e.getKey()+"\n" + e.getValue()+"\n";
+    		Files.write(Paths.get("/tmp/emissions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
+    		Files.write(Paths.get("/tmp/emissions"), (e.getValue()+"\n").getBytes(), StandardOpenOption.APPEND);
     	}
+    	//Files.write(Paths.get("./emissions"), (write).getBytes(), StandardOpenOption.APPEND);
+    	//BufferedWriter writer = new BufferedWriter(new FileWriter("./emissions"), 32768);
+        //writer.write(write);
+        //writer.close();
     	System.out.println("Emission matrix exported.");
+    	
+    	//write = "";
     	for (Entry<String,Map<String, Double>> e : transitionMatrix.entrySet()) {
-    		Files.write(Paths.get("./transitions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
+    		//write += e.getKey()+"\n";
+    		Files.write(Paths.get("/tmp/transitions"), (e.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
     		for (Entry<String, Double> i : e.getValue().entrySet()) {
-    			Files.write(Paths.get("./transitions"), (i.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
-    			Files.write(Paths.get("./transitions"), (i.getValue()+"\n").getBytes(), StandardOpenOption.APPEND);
+    			//write += i.getKey()+"\n" + i.getValue()+"\n";
+    			Files.write(Paths.get("/tmp/transitions"), (i.getKey()+"\n").getBytes(), StandardOpenOption.APPEND);
+    			Files.write(Paths.get("/tmp/transitions"), (i.getValue()+"\n").getBytes(), StandardOpenOption.APPEND);
     		}
-    		Files.write(Paths.get("./transitions"), ("####\n").getBytes(), StandardOpenOption.APPEND);
+    		//write += "####\n";
+    		Files.write(Paths.get("/tmp/transitions"), ("####\n").getBytes(), StandardOpenOption.APPEND);
     	}
+    	//Files.write(Paths.get("./transitions"), (write).getBytes(), StandardOpenOption.APPEND);
+    	//writer = new BufferedWriter(new FileWriter("./transitions"), 32768);
+        //writer.write(write);
+        //writer.close();
+    	
+    	Files.move(Paths.get("/tmp/emissions"), Paths.get("./emissions"), StandardCopyOption.REPLACE_EXISTING);
+    	Files.move(Paths.get("/tmp/transitions"), Paths.get("./transitions"), StandardCopyOption.REPLACE_EXISTING);
+    	//new File("/tmp/emissions").renameTo(new File("./emissions"));
+    	//new File("/tmp/transitions").renameTo(new File("./transitions"));
     	System.out.println("Transition matrix exported.");
 	}
     
     private static void import_matrices() throws IOException {
+    	//File file = new File("./emissions");
     	File file = new File("./emissions");
     	String line;
     	boolean isKey = true;
@@ -234,8 +266,10 @@ public class main {
                 	tag = line.split("##")[1];
                 	key = line;
                 	words.add(word);
-                	ViterbiDN.all_tags1.put(tag, new Node(null));
-                	ViterbiDN.all_tags2.put(tag, new Node(null));
+                	//ViterbiDN.all_tags1.put(tag, new Node(null));
+                	//ViterbiDN.all_tags2.put(tag, new Node(null));
+                	Viterbi_Sed.all_tags1.put(tag, new Node(null));
+                	Viterbi_Sed.all_tags2.put(tag, new Node(null));
                 	continue;
                 }
                 isKey = true;
@@ -247,6 +281,7 @@ public class main {
     	}
     	
     	file = new File("./transitions");
+    	//file = new File("/var/tmp/transitions");
     	boolean first = true;
     	boolean val = false;
     	isKey = true;
@@ -303,16 +338,21 @@ public class main {
 
     static boolean annotate = false;
 	public static void main(String[] args) throws IOException {
-		if (args[0].equals("cv") && args.length == 2) {
+        
+        
+        //export();
+        
+        
+		if (args.length == 2 && args[0].equals("cv")) {
 			System.out.println("Mode = Cross Validation");
 			//TenFoldCV.main("./brown_training");
 			TenFoldCV.main(args[1]);
-		} else if (args[0].equals("10cv") && args.length == 2) {
+		} else if (args.length == 2 && args[0].equals("10cv")) {
 			String path = args[1];
 			load_file(new File(path));
 			emissions();
 	        transitions();
-		} else if (args[0].equals("train")) {
+		} else if (args.length == 2 && args[0].equals("train")) {
 			System.out.println("Mode = Train");
 			String path = args[1];
 			File[] files = read_folder(path);
@@ -322,7 +362,7 @@ public class main {
 			emissions();
 	        transitions();
 	        export();
-		} else if (args[0].equals("annotate")) {
+		} else if (args.length == 3 && args[0].equals("annotate")) {
 			System.out.println("Mode = Annotate");
 			annotate = true;
 			String input_dir = args[1];
@@ -339,11 +379,12 @@ public class main {
 				if (file.getName().startsWith(".") || !file.getName().startsWith("notags-")) continue;
 				ArrayList<String> fileAL = TenFoldCV.read_lines2arraylist(file);
 				for (String g : fileAL) {
-					results.add(ViterbiDN.viterbi(g, ""));
+					results.add(Viterbi_Sed.main(g));
 					ViterbiDN.clear_map(ViterbiDN.all_tags1);
 					ViterbiDN.clear_map(ViterbiDN.all_tags2);
 				}
-				File f = new File(output_dir + "/" + file.getName().substring(7));
+				//File f = new File(output_dir + "/" + file.getName().substring(7));
+				File f = new File("/tmp/" + file.getName().substring(7));
 				f.createNewFile();
 				String[] g;
 				ArrayList<String> res;
@@ -353,11 +394,22 @@ public class main {
 					g = fileAL.get(i).split(" ");
 					res = results.get(i);
 					for (int j = 0; j < g.length; j++) wrt += " " + g[j] + "/" + res.get(j);
-					Files.write(Paths.get(f.getPath()), (wrt.substring(1) + "\n").getBytes(), StandardOpenOption.APPEND);
+					Files.write(new File("/tmp/" + f.getName()).toPath(), (wrt.substring(1) + "\n").getBytes(), StandardOpenOption.APPEND);
+					//Files.write(Paths.get(f.getPath()), (wrt.substring(1) + "\n").getBytes(), StandardOpenOption.APPEND);
 				}
+				Files.move(new File(f.getAbsolutePath()).toPath(), Paths.get(output_dir + "/" + file.getName().substring(7)), StandardCopyOption.REPLACE_EXISTING);
 				file.delete();
 			}
 			System.out.println("Annotation finished.");
+		} else {
+			String path2 = "./brown_training";
+			path2 = "/Users/darko/Documents/GitHub/MaschinelleSprachverarbeitung03/MSV03/10foldCV/8/tri";
+			File[] filess = read_folder(path2);
+			for (File file : filess) {
+				load_file(file);
+			}
+			emissions();
+	        transitions();
 		}
         
 

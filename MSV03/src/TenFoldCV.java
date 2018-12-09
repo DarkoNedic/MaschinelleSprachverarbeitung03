@@ -8,10 +8,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharSink;
@@ -84,6 +87,12 @@ public class TenFoldCV {
 	public static void write(int n, String g, boolean train) throws IOException {
 		g = g + "\n";
 		if (train) {
+			Files.write(Paths.get("/tmp/10foldCV/" + n + "/train"), g.getBytes(), StandardOpenOption.APPEND);
+		} else {
+			Files.write(Paths.get("/tmp/10foldCV/" + n + "/valid"), g.getBytes(), StandardOpenOption.APPEND);
+		}
+		
+		/*if (train) {
 			//Files.write(Paths.get("./10foldCV/" + n + "/train"), g.getBytes(), StandardOpenOption.APPEND);
 			File file = new File("./10foldCV/" + n + "/train");
 			CharSink chs = com.google.common.io.Files.asCharSink(
@@ -95,7 +104,7 @@ public class TenFoldCV {
 			CharSink chs = com.google.common.io.Files.asCharSink(
 				      file, Charsets.UTF_8, FileWriteMode.APPEND);
 				    chs.write(g);
-		}
+		}*/
 	}
 	
 	public static void clean_valid(File file, Charset cs) throws IOException {
@@ -139,6 +148,7 @@ public class TenFoldCV {
 			}
 			
 			if(!main.annotate) {
+				//File f = new File(file.getParent() + "/notags");
 				File f = new File(file.getParent() + "/notags");
 				f.createNewFile();
 				f = new File(file.getParent() + "/nowords");
@@ -230,16 +240,18 @@ public class TenFoldCV {
 		
 		ArrayList<String> fold;
 		ArrayList<String> valid;
-		File f = new File("./10foldCV");
+		File f = new File("/tmp/10foldCV");
 		f.mkdir();
+		/*f = new File("./10foldCV/");
+		f.mkdir();*/
 		for (int i = 1; i < n+1; i++) {
 			fold = folds.get(i-1);
 			valid = validations.get(i-1);
-			f = new File("./10foldCV/" + i);
+			f = new File("/tmp/10foldCV/" + i);
 			f.mkdir();
-			f = new File("./10foldCV/" + i + "/train");
+			f = new File("/tmp/10foldCV/" + i + "/train");
 			f.createNewFile();
-			f = new File("./10foldCV/" + i + "/valid");
+			f = new File("/tmp/10foldCV/" + i + "/valid");
 			f.createNewFile();
 			for (String g : fold) {
 				write(i, g, true);
@@ -258,7 +270,7 @@ public class TenFoldCV {
 		ArrayList<String> train_files = new ArrayList<>();
 		ArrayList<String> valid_files = new ArrayList<>();
 		for (int i = 1; i < n+1; i++) {
-			files = read_folder("./10foldCV/" + i);
+			files = read_folder("/tmp/10foldCV/" + i);
 			train_files.add(files[1].toString());
 			valid_files.add(files[0].toString());
 		}
@@ -267,6 +279,9 @@ public class TenFoldCV {
 			File ff = new File(valid_file);
 			clean_valid(ff, StandardCharsets.ISO_8859_1);
 		}
+		//Files.move(Paths.get("/tmp/10foldCV/"), Paths.get("./"), StandardCopyOption.REPLACE_EXISTING);
+		//Files.move(new File("/tmp/10foldCV/").toPath(), new File("./10foldCV/").toPath(), StandardCopyOption.REPLACE_EXISTING);
+		CopyDir.copyFolder(new File("/tmp/10foldCV/"), new File("./10foldCV/"));
 		// bis hierher kommentieren
 		
 		
@@ -282,10 +297,26 @@ public class TenFoldCV {
 		ArrayList<String> notags = new ArrayList<>();
 		for (int i = 1; i < n+1; i++) {
 			files = read_folder("./10foldCV/" + i);
-			train_files.add(files[2].toString());
-			valid_files.add(files[0].toString());
-			nowords.add(files[1].toString());
-			notags.add(files[3].toString());
+			if (files[0].toString().endsWith("train")) train_files.add(files[0].toString());
+			if (files[1].toString().endsWith("train")) train_files.add(files[1].toString());
+			if (files[2].toString().endsWith("train")) train_files.add(files[2].toString());
+			if (files[3].toString().endsWith("train")) train_files.add(files[3].toString());
+			if (files[0].toString().endsWith("valid")) valid_files.add(files[0].toString());
+			if (files[1].toString().endsWith("valid")) valid_files.add(files[1].toString());
+			if (files[2].toString().endsWith("valid")) valid_files.add(files[2].toString());
+			if (files[3].toString().endsWith("valid")) valid_files.add(files[3].toString());
+			if (files[0].toString().endsWith("nowords")) nowords.add(files[0].toString());
+			if (files[1].toString().endsWith("nowords")) nowords.add(files[1].toString());
+			if (files[2].toString().endsWith("nowords")) nowords.add(files[2].toString());
+			if (files[3].toString().endsWith("nowords")) nowords.add(files[3].toString());
+			if (files[0].toString().endsWith("notags")) notags.add(files[0].toString());
+			if (files[1].toString().endsWith("notags")) notags.add(files[1].toString());
+			if (files[2].toString().endsWith("notags")) notags.add(files[2].toString());
+			if (files[3].toString().endsWith("notags")) notags.add(files[3].toString());
+			//train_files.add(files[2].toString());
+			//valid_files.add(files[0].toString());
+			//nowords.add(files[1].toString());
+			//notags.add(files[3].toString());
 		}
 		
 		System.out.println("Prepared validation data for cross-validation.\n");
@@ -304,10 +335,16 @@ public class TenFoldCV {
 			for (String validd : read_lines2arraylist(new File(notags.get(fc)))) {
 				//System.out.println(valid);
 				path2.clear();
-				path2 = ViterbiDN.viterbi(validd, "");
+				//System.out.println("start sed");
+				path2 = Viterbi_Sed.main(validd);
+				//System.out.println("end sed");
 				String[] truth = read_lines2arraylist(new File(nowords.get(fc))).get(fc_).split(" ");
 				int matches = 0;
 				for (int i = 0; i < truth.length; i++) {
+					if (path2.size() == 0) {
+						System.out.println(validd);
+					}
+					//System.out.println(validd);
 					if (path2.get(i).equals(truth[i])) {
 						matches++;
 					}
@@ -316,14 +353,22 @@ public class TenFoldCV {
 				//System.out.print("Precision: " + (float) ((float) matches / (float) truth.length) + ", " + (float) matches + "/" + (float) truth.length);
 				//System.out.println(" | Total: " + precision_sum/(fc_+1));
 				fc_++;
-				ViterbiDN.clear_map(ViterbiDN.all_tags1);
-				ViterbiDN.clear_map(ViterbiDN.all_tags2);
-				ViterbiDN.all_tags1.remove("");
-				ViterbiDN.all_tags2.remove("");
+				/*ViterbiDN.clear_map(Viterbi_Sed.all_tags1);
+				ViterbiDN.clear_map(Viterbi_Sed.all_tags2);*/
+				Viterbi_Sed.all_tags1.remove("");
+				Viterbi_Sed.all_tags2.remove("");
 			}
-			System.out.println("Fold " + fc + " precision: " + precision_sum/(fc_));
+			System.out.println("Fold " + (fc+1) + " precision: " + precision_sum/(fc_));
 			total_precision.add(precision_sum/(fc_));
 			fc++;
+			main.emissions_map.clear();
+			main.transitionMatrix.clear();
+			main.emissions_matrix.clear();
+			main.lines.clear();
+			main.words.clear();
+			main.lines_test.clear();
+			main.emissions_tag_count.clear();
+			main.lines_test.clear();
 		}
 		
 		double total = 0.0;
